@@ -1,22 +1,15 @@
 import React, { useState, useCallback } from "react";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-  type UseMutationResult,
-} from "@tanstack/react-query";
-import { toast } from "react-hot-toast";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 
 import css from "./App.module.css";
 import SearchBox from "../SearchBox/SearchBox";
 import NoteList from "../NoteList/NoteList";
-import { NoteForm } from "../NoteForm/NoteForm";
 import NoteModal from "../NoteModal/NoteModal";
 import Pagination from "../Pagination/Pagination";
 
-import { fetchNotes, createNote, deleteNote } from "../../services/noteService";
-import type { Note, CreateNoteData } from "../../types/note";
+import { fetchNotes } from "../../services/noteService";
+import type { Note } from "../../types/note";
 
 const PER_PAGE = 12;
 
@@ -30,36 +23,14 @@ const App: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
 
-  const queryClient = useQueryClient();
+  // debounce значення для пошуку
+  const [debouncedSearch] = useDebounce(search, 500);
 
   const { data, isLoading, isError, error } = useQuery<NotesResponse, Error>({
-    queryKey: ["notes", { page, search }],
-    queryFn: () => fetchNotes({ page, perPage: PER_PAGE, search }),
+    queryKey: ["notes", { page, search: debouncedSearch }],
+    queryFn: () =>
+      fetchNotes({ page, perPage: PER_PAGE, search: debouncedSearch }),
     placeholderData: keepPreviousData,
-  });
-
-  const createNoteMutation: UseMutationResult<Note, Error, CreateNoteData> =
-    useMutation({
-      mutationFn: createNote,
-      onSuccess: () => {
-        toast.success("Note created!");
-        queryClient.invalidateQueries({ queryKey: ["notes"] });
-        setModalOpen(false);
-      },
-      onError: () => {
-        toast.error("Failed to create note");
-      },
-    });
-
-  const deleteNoteMutation = useMutation<Note, Error, string>({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      toast.success("Note deleted");
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-    onError: () => {
-      toast.error("Failed to delete note");
-    },
   });
 
   const handleSearch = useCallback((searchText: string) => {
@@ -71,23 +42,18 @@ const App: React.FC = () => {
     setPage(newPage);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this note?")) {
-      deleteNoteMutation.mutate(id);
-    }
-  };
-
-  const handleCreate = (data: CreateNoteData) => {
-    createNoteMutation.mutate(data);
-  };
-
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox onSearch={handleSearch} />
+        <SearchBox
+          value={search}
+          onChange={setSearch}
+          onSearch={handleSearch}
+        />
+
         {data?.totalPages && data.totalPages > 1 && (
           <Pagination
             pageCount={data.totalPages}
@@ -95,6 +61,7 @@ const App: React.FC = () => {
             onPageChange={handlePageChange}
           />
         )}
+
         <button className={css.button} onClick={openModal}>
           Create Note +
         </button>
@@ -105,19 +72,9 @@ const App: React.FC = () => {
         <p className={css.status}>Error: {error?.message ?? "Unknown error"}</p>
       )}
 
-      {data && data.notes.length > 0 && (
-        <NoteList notes={data.notes} onDelete={handleDelete} />
-      )}
+      {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
 
-      {isModalOpen && (
-        <NoteModal onClose={closeModal}>
-          <NoteForm
-            onSubmit={handleCreate}
-            onCancel={closeModal}
-            isSubmitting={createNoteMutation.status === "pending"}
-          />
-        </NoteModal>
-      )}
+      {isModalOpen && <NoteModal onClose={closeModal} />}
     </div>
   );
 };

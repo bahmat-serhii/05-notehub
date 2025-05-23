@@ -17,27 +17,34 @@ interface FetchNotesParams {
   search?: string;
 }
 
+interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
+
 export const fetchNotes = async ({
   page,
   perPage,
   search,
-}: FetchNotesParams): Promise<{ notes: Note[]; totalPages: number }> => {
+}: FetchNotesParams): Promise<FetchNotesResponse> => {
   const params: Record<string, string | number> = { page, perPage };
 
   if (search && search.trim() !== "") {
     params.search = search;
   }
 
-  const response = await axiosInstance.get("/notes", { params });
+  const response = await axiosInstance.get<FetchNotesResponse>("/notes", {
+    params,
+  });
   return response.data;
 };
 
 export const createNote = async (data: CreateNoteData): Promise<Note> => {
-  const response = await axiosInstance.post("/notes", data);
+  const response = await axiosInstance.post<Note>("/notes", data);
   return response.data;
 };
 
-export const deleteNote = async (id: string): Promise<Note> => {
-  const response = await axiosInstance.delete(`/notes/${id}`);
+export const deleteNote = async (id: number): Promise<Note> => {
+  const response = await axiosInstance.delete<Note>(`/notes/${id}`);
   return response.data;
 };

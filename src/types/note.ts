@@ -1,10 +1,11 @@
 export interface Note {
-  id: string;
+  id: number;
   title: string;
   content: string;
-  tag: string;
-  createdAt: string;
-  updatedAt: string;
+  tag: Tag;
+  createdAt?: string;
+  updatedAt?: string;
+  isArchived: boolean;
 }
 
 export interface NotesResponse {
@@ -18,5 +19,12 @@ export interface NotesResponse {
 export interface CreateNoteData {
   title: string;
   content?: string;
-  tag: string;
+  tag: Tag;
+}
+export enum Tag {
+  Todo = "Todo",
+  Work = "Work",
+  Personal = "Personal",
+  Meeting = "Meeting",
+  Shopping = "Shopping",
 }
