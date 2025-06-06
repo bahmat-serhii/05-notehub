@@ -38,12 +38,12 @@ const App: React.FC = () => {
     setSearch(searchText);
   }, []);
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
-  };
+  }, []);
 
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const openModal = useCallback(() => setModalOpen(true), []);
+  const closeModal = useCallback(() => setModalOpen(false), []);
 
   return (
     <div className={css.app}>
@@ -72,7 +72,7 @@ const App: React.FC = () => {
         <p className={css.status}>Error: {error?.message ?? "Unknown error"}</p>
       )}
 
-      {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
+      {data && <NoteList notes={data.notes} />}
 
       {isModalOpen && <NoteModal onClose={closeModal} />}
     </div>

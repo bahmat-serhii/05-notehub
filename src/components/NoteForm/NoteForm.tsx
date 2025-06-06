@@ -8,7 +8,7 @@ import { createNote } from "../../services/noteService";
 import { toast } from "react-hot-toast";
 
 interface NoteFormProps {
-  onCancel: () => void;
+  onClose: () => void;
 }
 
 interface FormValues {
@@ -31,7 +31,7 @@ const validationSchema = Yup.object({
     .required("Tag is required"),
 });
 
-export const NoteForm: React.FC<NoteFormProps> = ({ onCancel }) => {
+export const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
   const queryClient = useQueryClient();
 
   const { mutate, status } = useMutation<Note, Error, CreateNoteData>({
@@ -39,7 +39,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({ onCancel }) => {
     onSuccess: () => {
       toast.success("Note created!");
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      onCancel();
+      onClose();
     },
     onError: () => {
       toast.error("Failed to create note");
@@ -93,7 +93,7 @@ export const NoteForm: React.FC<NoteFormProps> = ({ onCancel }) => {
           <button
             type="button"
             className={css.cancelButton}
-            onClick={onCancel}
+            onClick={onClose}
             disabled={status === "pending"}
           >
             Cancel

@@ -37,7 +37,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ onClose }) => {
       onClick={handleBackdropClick}
     >
       <div className={css.modal}>
-        <NoteForm onCancel={onClose} />
+        <NoteForm onClose={onClose} />
       </div>
     </div>,
     document.body

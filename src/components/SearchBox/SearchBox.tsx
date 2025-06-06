@@ -3,22 +3,26 @@ import { useDebounce } from "use-debounce";
 import css from "./SearchBox.module.css";
 
 interface SearchBoxProps {
-  value: string; // Контрольоване значення input
-  onSearch: (searchText: string) => void; // Колбек при пошуку (з дебаунсом)
-  onChange: (newValue: string) => void; // Колбек для оновлення значення input
+  /** Controlled value of the input */
+  value: string;
+  /** Callback triggered when the debounced search text changes */
+  onSearch: (searchText: string) => void;
+  /** Callback for updating the input value */
+  onChange: (newValue: string) => void;
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ value, onSearch, onChange }) => {
-  // Дебаунс для значення, яке прийшло з пропів
+  // Debounced version of the input value
   const [debouncedValue] = useDebounce(value, 500);
 
-  // Виклик onSearch після затримки дебаунсу
+  // Call onSearch when the debounced value changes
   useEffect(() => {
     onSearch(debouncedValue.trim());
   }, [debouncedValue, onSearch]);
 
+  // Handle input changes and notify parent
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value); // Передаємо нове значення батьку
+    onChange(e.target.value);
   };
 
   return (
@@ -26,7 +30,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ value, onSearch, onChange }) => {
       className={css.input}
       type="text"
       placeholder="Search notes"
-      value={value} // Контрольоване значення
+      value={value}
       onChange={handleChange}
       autoComplete="off"
     />

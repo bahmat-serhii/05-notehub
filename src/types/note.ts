@@ -3,17 +3,7 @@ export interface Note {
   title: string;
   content: string;
   tag: Tag;
-  createdAt?: string;
-  updatedAt?: string;
   isArchived: boolean;
-}
-
-export interface NotesResponse {
-  notes: Note[];
-  totalPages: number;
-  page: number;
-  perPage: number;
-  totalNotes: number;
 }
 
 export interface CreateNoteData {

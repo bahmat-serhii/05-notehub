@@ -3,30 +3,43 @@ import ReactPaginate from "react-paginate";
 import css from "./Pagination.module.css";
 
 interface PaginationProps {
-  pageCount: number; // Загальна кількість сторінок
-  currentPage: number; // Поточна сторінка, 1-базована (наприклад, 1, 2, 3, ...)
-  onPageChange: (selectedPage: number) => void; // Функція викликається з номером сторінки (1-базована)
+  /** Total number of pages */
+  pageCount: number;
+  /** Current page number (1-based) */
+  currentPage: number;
+  /**
+   * Callback triggered when page changes.
+   * Provides the selected page number (1-based).
+   */
+  onPageChange: (selectedPage: number) => void;
 
-  // Додаткові пропси для кастомізації
+  /** Label for the "next" button */
   nextLabel?: React.ReactNode;
+  /** Label for the "previous" button */
   previousLabel?: React.ReactNode;
+  /** Label for the break indicator (e.g. '...') */
   breakLabel?: React.ReactNode;
+  /** Number of pages to display in the pagination control */
   pageRangeDisplayed?: number;
+
+  /** Additional props passed down to ReactPaginate */
+  [key: string]: any;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
   pageCount,
   currentPage,
   onPageChange,
-  nextLabel = "→", // Дефолтні значення
+  nextLabel = "→",
   previousLabel = "←",
   breakLabel = "...",
   pageRangeDisplayed = 3,
+  ...restProps
 }) => {
   /**
-   * ReactPaginate використовує 0-базовані індекси сторінок.
-   * Але наш компонент і зовнішній код працюють з 1-базованими номерами сторінок.
-   * Тому при передачі в onPageChange перетворюємо selectedItem.selected (0-базований) у 1-базований.
+   * ReactPaginate uses zero-based page indexes,
+   * but our component API uses 1-based page numbers.
+   * Convert zero-based index to 1-based page number on change.
    */
   const handlePageChange = (selectedItem: { selected: number }) => {
     onPageChange(selectedItem.selected + 1);
@@ -42,7 +55,7 @@ const Pagination: React.FC<PaginationProps> = ({
       pageRangeDisplayed={pageRangeDisplayed}
       pageCount={pageCount}
       previousLabel={previousLabel}
-      forcePage={currentPage - 1} // Перетворення 1-базованої сторінки в 0-базовану для компонента
+      forcePage={currentPage - 1} // Convert 1-based page to zero-based for ReactPaginate
       containerClassName={css.pagination}
       pageClassName={css.pageItem}
       pageLinkClassName={css.pageLink}
@@ -54,6 +67,7 @@ const Pagination: React.FC<PaginationProps> = ({
       breakLinkClassName={css.pageLink}
       activeClassName={css.active}
       disabledClassName={css.disabled}
+      {...restProps}
     />
   );
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import css from "./NoteList.module.css";
 import type { Note } from "../../types/note";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,23 +11,28 @@ interface NoteListProps {
 
 const NoteList: React.FC<NoteListProps> = ({ notes }) => {
   const queryClient = useQueryClient();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // Використовуємо useMutation для видалення нотатки
-  const { mutate, status } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: deleteNote,
+    onMutate: (id) => {
+      setDeletingId(id);
+    },
     onSuccess: () => {
-      // Інвалюємо кеш запиту після успішного видалення
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
       toast.success("Note deleted!");
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
     onError: () => {
       toast.error("Failed to delete note");
     },
+    onSettled: () => {
+      setDeletingId(null);
+    },
   });
 
-  if (!notes.length) return null;
-
-  return (
+  return notes.length === 0 ? (
+    <p className={css.empty}>No notes found.</p> // 🆕 Запасний інтерфейс при порожньому списку
+  ) : (
     <ul className={css.list}>
       {notes.map(({ id, title, content, tag }) => (
         <li key={id} className={css.listItem}>
@@ -38,9 +43,9 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
             <button
               className={css.button}
               onClick={() => mutate(id)}
-              disabled={status === "pending"}
+              disabled={deletingId === id}
             >
-              {status === "pending" ? "Deleting..." : "Delete"}
+              {deletingId === id ? "Deleting..." : "Delete"}
             </button>
           </div>
         </li>
